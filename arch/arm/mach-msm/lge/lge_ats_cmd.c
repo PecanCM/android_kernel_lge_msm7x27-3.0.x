@@ -39,8 +39,6 @@ char *argv[] = {
 
 
 
-extern int fw_rev;
-
 void wirte_flight_mode(int mode)
 {
 	char buf[10];
@@ -167,7 +165,7 @@ int lge_ats_handle_atcmd(struct msm_rpc_server *server,
 		break;
 
 	case ATCMD_TOUCHFWVER:
-		ret_value1 = fw_rev;		
+		ret_value1 = 0;//fw_rev;		
 		break;
 
 	//LGE_UPDATE_S seungin.choi@lge.com 2011-04-01, add AT%LEDON
