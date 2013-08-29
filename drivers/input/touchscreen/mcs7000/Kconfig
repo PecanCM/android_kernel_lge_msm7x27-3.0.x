@@ -1,0 +1,32 @@
+menu "Melfas MCS7000 Touchscreen"
+
+config TOUCHSCREEN_MCS7000
+	tristate "Melfas MCS7000 support"
+	default n
+	depends on I2C
+	help
+		Say Y here if you have a MCS7000 touchscreen, usually found
+		on some mobile phones.
+		
+		To compile this driver as a module, say M here and the driver
+		will be called mcs7000.
+
+config MCS7000_MULTITOUCH
+	bool "Multitouch support"
+	default y
+	depends on TOUCHSCREEN_MCS7000
+	help
+		The MCS7000 supports 2-point multitouch. Select this option
+		to enable such support.
+
+config MCS7000_PECAN
+	bool "LG Pecan soft button support"
+	default n
+	depends on TOUCHSCREEN_MCS7000
+	help
+		Select this option to enable support for the soft buttons
+		found on the LG Pecan board (P350).
+		
+		You can otherwise say N here.
+
+endmenu
