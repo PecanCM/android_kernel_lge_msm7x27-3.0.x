@@ -259,4 +259,4 @@ module_init(mcs7000_init);
 module_exit(mcs7000_exit);
 
 MODULE_DESCRIPTION("Melfas MCS7000 Touchscreen driver");
-MODULE_LICENSE("GLP v2");
+MODULE_LICENSE("GPL v2");
