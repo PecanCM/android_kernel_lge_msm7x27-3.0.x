@@ -30,7 +30,7 @@ static irqreturn_t mcs7000_irq_handler(int irq, void *handle)
 	static int		old_x1=-1, old_y1=-1, old_z1=-1;
 	static int		old_x2=-1, old_y2=-1, old_z2=-1;
 
-	irq_status = irq_read_line(irq);
+	irq_status = dev->platform->read_irq_line(dev);
 	pressed = !irq_status;
 
 	i2c_command = MCS7000_CMD_INPUT_INFO;
@@ -113,26 +113,20 @@ static irqreturn_t mcs7000_irq_handler(int irq, void *handle)
 		}
 	}
 
-#ifdef CONFIG_MCS7000_PECAN
-	mcs7000_pecan_input_event(dev, response_buffer);
-#endif
+	dev->platform->input_event(dev, response_buffer);
 
 	return IRQ_HANDLED;
 }
 
 void mcs7000_power_on(struct mcs7000_device *dev)
 {
-#ifdef CONFIG_MCS7000_PECAN
-	mcs7000_pecan_power_on(dev);
-#endif
+	dev->platform->power_on(dev);
 	enable_irq(dev->client->irq);
 }
 
 void mcs7000_power_off(struct mcs7000_device *dev)
 {
-#ifdef CONFIG_MCS7000_PECAN
-	mcs7000_pecan_power_off(dev);
-#endif
+	dev->platform->power_off(dev);
 	disable_irq(dev->client->irq);
 }
 
@@ -172,11 +166,13 @@ static int mcs7000_i2c_probe(struct i2c_client *client, const struct i2c_device_
 	input_set_abs_params(dev->input, ABS_MT_TRACKING_ID, 0, 9, 0, 0);
 
 #ifdef CONFIG_MCS7000_PECAN
-	err = mcs7000_pecan_probe(dev);
-	if(err < 0) {
-		goto _cleanup_pecan_probe;
-	}
+	dev->platform = mcs7000_pecan_get_platform();
 #endif
+
+	err = dev->platform->probe(dev);
+	if(err < 0) {
+		goto _cleanup_platform_probe;
+	}
 
 	err = request_threaded_irq(client->irq, NULL, mcs7000_irq_handler,
 		IRQF_TRIGGER_LOW | IRQF_TRIGGER_HIGH, "mcs7000", dev);
@@ -191,11 +187,10 @@ static int mcs7000_i2c_probe(struct i2c_client *client, const struct i2c_device_
 	return 0;
 
 _cleanup_request_irq:
+	dev->platform->remove(dev);
 
-#ifdef CONFIG_MCS7000_PECAN
-_cleanup_pecan_probe:
+_cleanup_platform_probe:
 	input_unregister_device(dev->input);
-#endif
 
 _cleanup_input_register:
 	input_free_device(dev->input);
@@ -221,6 +216,16 @@ static int mcs7000_i2c_remove(struct i2c_client *client)
 	i2c_set_clientdata(client, NULL);
 
 	return 0;
+}
+
+void *mcs7000_get_platform_data(struct mcs7000_device *dev)
+{
+	return dev->platform_data;
+}
+
+void mcs7000_set_platform_data(struct mcs7000_device *dev, void *platform_data)
+{
+	dev->platform_data = platform_data;
 }
 
 static const struct i2c_device_id mcs7000_i2c_ids[] =

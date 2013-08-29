@@ -37,24 +37,33 @@
 #define MCS7000_INPUT_SINGLE_POINT_TOUCH	1
 #define MCS7000_INPUT_MULTI_POINT_TOUCH		2
 
+struct mcs7000_device;
+
+struct mcs7000_platform
+{
+	int				(*probe)(struct mcs7000_device *dev);
+	int				(*power_on)(struct mcs7000_device *dev);
+	int				(*power_off)(struct mcs7000_device *dev);
+	void				(*input_event)(struct mcs7000_device *dev, unsigned char *response_buffer);
+	int				(*read_irq_line)(struct mcs7000_device *dev);
+	void				(*remove)(struct mcs7000_device *dev);
+};
+
 
 struct mcs7000_device
 {
 	struct i2c_client		*client;
 	struct input_dev		*input;
+	struct mcs7000_platform		*platform;
 
-#ifdef CONFIG_MCS7000_PECAN
-	struct touch_platform_data	*touch_data;
-#endif /* CONFIG_MCS7000_PECAN */
-
+	void				*platform_data;
 };
 
+void mcs7000_set_platform_data(struct mcs7000_device *dev, void *platform_data);
+void *mcs7000_get_platform_data(struct mcs7000_device *dev);
 
 #ifdef CONFIG_MCS7000_PECAN
-int mcs7000_pecan_probe(struct mcs7000_device *dev);
-int mcs7000_pecan_power_off(struct mcs7000_device *dev);
-int mcs7000_pecan_power_on(struct mcs7000_device *dev);
-void mcs7000_pecan_input_event(struct mcs7000_device *dev, unsigned char *response_buffer);
+struct mcs7000_platform *mcs7000_pecan_get_platform(void);
 #endif /* CONFIG_MCS7000_PECAN */
 
 #endif /* !__MCS7000_H__ */
