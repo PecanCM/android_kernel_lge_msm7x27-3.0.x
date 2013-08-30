@@ -1,0 +1,42 @@
+menu "Melfas MCS7000 Touchscreen"
+
+config TOUCHSCREEN_MCS7000
+	tristate "Melfas MCS7000 support"
+	default n
+	depends on I2C
+	help
+		Say Y here if you have a MCS7000 touchscreen, usually found
+		on some mobile phones.
+		
+		To compile this driver as a module, say M here and the driver
+		will be called mcs7000.
+
+config MCS7000_MULTITOUCH
+	bool "Multitouch support"
+	default y
+	depends on TOUCHSCREEN_MCS7000
+	help
+		The MCS7000 supports 2-point multitouch. Select this option
+		to enable such support.
+
+choice
+	prompt "Supporting platform"
+	default MCS7000_PECAN
+	depends on TOUCHSCREEN_MCS7000
+	help
+		For this driver to work correctly, it needs some platform-dependent
+		functions that are not abstracted by the kernel. You can select the
+		underlying platform here.
+
+	config MCS7000_PECAN
+		bool "LG Pecan (P350)"
+		depends on TOUCHSCREEN_MCS7000
+		help
+			Select this option to enable this device to work with the LG
+			Pecan board, also known commercially as the LG Optimus Me or
+			simply as the P350.
+			
+			You can otherwise say N here.
+endchoice
+
+endmenu
